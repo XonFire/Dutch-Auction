@@ -16,21 +16,21 @@ contract TubbysCoin is ERC20Burnable {
 contract DutchAuction {
     event BidSubmission(address indexed bidder, uint quntity, uint amount);
 
-    event AuctionEnd(uint endTime);
+    event AuctionEnd(uint256 endTime);
 
     event RefundEther(address indexed bidder, uint refund);
 
-    address public owner;
+    address payable public owner;
 
     bool internal locked;
-    uint finalPrice;
-    uint immutable reservedPrice;
-    uint immutable totalTokens;
-    uint totalSold;
+    uint public finalPrice;
+    uint public immutable reservedPrice;
+    uint public immutable totalTokens;
+    uint public totalSold;
     uint public startTime;
     uint public endTime;
-    uint immutable discountRate;
-    uint immutable startingPrice;
+    uint public immutable discountRate;
+    uint public immutable startingPrice;
     uint private constant DURATION = 20 minutes;
     mapping(address => uint) public bids;
     mapping(address => uint) public orders;
@@ -72,7 +72,7 @@ contract DutchAuction {
         uint _discountRate
     ) {
         require(_token != address(0), "Invalid address");
-        owner = msg.sender;
+        owner = payable(msg.sender);
         token = ERC20Burnable(_token);
         stage = Stages.init;
         reservedPrice = _reservedPrice;
@@ -85,8 +85,8 @@ contract DutchAuction {
 
     function startAuction() public isOwner isStage(Stages.init) {
         require(
-            token.allowance(owner, address(this)) == totalTokens,
-            "Auction is not approved to sell specificed amount of tokens"
+            token.balanceOf(address(this)) == totalTokens,
+            "Auction is not approved to sell token total supply"
         );
         stage = Stages.start;
         startTime = block.timestamp;
@@ -97,8 +97,6 @@ contract DutchAuction {
         uint timeElapsed = block.timestamp - startTime;
         uint discountedPrice = startingPrice - discountRate * timeElapsed;
         if (reservedPrice > discountedPrice) discountedPrice = reservedPrice;
-        // console.log("timeElasped is %s", timeElapsed);
-        // console.log("Discounted Price is %s", discountedPrice);
         return discountedPrice;
     }
 
@@ -110,24 +108,22 @@ contract DutchAuction {
         reentrancyGuard
         returns (uint quantity)
     {
+        require(_quantity > 0, "Invalid bid");
         quantity = _quantity;
         if (quantity > totalTokens - totalSold)
             quantity = totalTokens - totalSold;
+        assert(quantity > 0);
         address payable bidder = payable(msg.sender);
         uint amount = msg.value;
         uint cost = calcTokenPrice() * quantity;
         require(msg.value >= cost, "Insufficient ETH for bid");
         bids[bidder] += cost;
         orders[bidder] += quantity;
-        console.log("bidder", bidder);
         totalSold += quantity;
         // refund excess ETH
         uint refund = 0;
         if (amount > cost) {
             refund = amount - cost;
-            // console.log("Quantity", quantity);
-            // console.log("Cost", cost);
-            // console.log("Refund Amount %s", refund);
             bidder.transfer(refund);
             emit RefundEther(bidder, refund);
         }
@@ -136,24 +132,22 @@ contract DutchAuction {
     }
 
     function endAuction() private {
+        assert(totalSold <= totalTokens);
         stage = Stages.end;
-        endTime = block.timestamp;
         finalPrice = calcTokenPrice();
-        // Burn excess token
-        token.burnFrom(owner, totalTokens - totalSold);
-        // console.log("AUCTION SHOULD HAVE ENDED");
+        endTime = block.timestamp;
+        token.burn(totalTokens - totalSold);
+        owner.transfer(finalPrice * totalSold);
         emit AuctionEnd(endTime);
     }
 
-    function claimTokens() public isStage(Stages.end) reentrancyGuard {
-        // console.log("hello!");
+    function claimTokens() public hasEnded isStage(Stages.end) reentrancyGuard {
         address payable receiver = payable(msg.sender);
         uint tokenCount = orders[receiver];
         uint refund = bids[receiver] - tokenCount * finalPrice;
-        // console.log("refund", refund);
         orders[receiver] = 0;
         bids[receiver] = 0;
-        token.transferFrom(owner, receiver, tokenCount);
+        token.transfer(receiver, tokenCount);
         receiver.transfer(refund);
         emit RefundEther(receiver, refund);
     }
