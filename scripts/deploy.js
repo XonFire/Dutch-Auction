@@ -8,8 +8,8 @@ async function main() {
   if (network.name === "hardhat") {
     console.warn(
       "You are trying to deploy a contract to the Hardhat Network, which" +
-        "gets automatically created and destroyed every time. Use the Hardhat" +
-        " option '--network localhost'"
+      " gets automatically created and destroyed every time. Use the Hardhat" +
+      " option '--network localhost'"
     );
   }
 
@@ -22,17 +22,22 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  const Token = await ethers.getContractFactory("Token");
-  const token = await Token.deploy();
-  await token.deployed();
+  const TubbysCoinFactory = await ethers.getContractFactory("TubbysCoin");
+  const TubbysCoin = await TubbysCoinFactory.deploy(5000);
+  await TubbysCoin.deployed();
+  const DutchAuctionFactory = await ethers.getContractFactory("DutchAuction");
+  const DutchAuction = await DutchAuctionFactory.deploy(TubbysCoin.address, 2000, 1000, 1);
+  await DutchAuction.deployed();
+  await TubbysCoin.transfer(DutchAuction.address, 5000);
 
-  console.log("Token address:", token.address);
+  console.log("TubbysCoin address:", TubbysCoin.address);
+  console.log("DutchAuction address", DutchAuction.address);
 
   // We also save the contract's artifacts and address in the frontend directory
-  saveFrontendFiles(token);
+  saveFrontendFiles(TubbysCoin, DutchAuction);
 }
 
-function saveFrontendFiles(token) {
+function saveFrontendFiles(TubbysCoin, DutchAuction) {
   const fs = require("fs");
   const contractsDir = path.join(__dirname, "..", "frontend", "src", "contracts");
 
@@ -42,14 +47,20 @@ function saveFrontendFiles(token) {
 
   fs.writeFileSync(
     path.join(contractsDir, "contract-address.json"),
-    JSON.stringify({ Token: token.address }, undefined, 2)
+    JSON.stringify({ TubbysCoin: TubbysCoin.address, DutchAuction: DutchAuction.address }, undefined, 2)
   );
 
-  const TokenArtifact = artifacts.readArtifactSync("Token");
+  const TubbysCoinArtifact = artifacts.readArtifactSync("TubbysCoin");
+  const DutchAuctionArtifact = artifacts.readArtifactSync("DutchAuction");
 
   fs.writeFileSync(
-    path.join(contractsDir, "Token.json"),
-    JSON.stringify(TokenArtifact, null, 2)
+    path.join(contractsDir, "TubbysCoin.json"),
+    JSON.stringify(TubbysCoinArtifact, null, 2)
+  );
+
+  fs.writeFileSync(
+    path.join(contractsDir, "DutchAuction.json"),
+    JSON.stringify(DutchAuctionArtifact, null, 2)
   );
 }
 

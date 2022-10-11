@@ -12,7 +12,7 @@ describe("Dutch Auction contract", function () {
         const DutchAuctionFactory = await ethers.getContractFactory("DutchAuction");
         const DutchAuction = await DutchAuctionFactory.deploy(TubbysCoin.address, 2000, 1000, 1);
         await DutchAuction.deployed();
-        TubbysCoin.transfer(DutchAuction.address, 5000);
+        await TubbysCoin.transfer(DutchAuction.address, 5000);
 
         return { TubbysCoin, DutchAuction, owner, addr1, addr2 };
     }
