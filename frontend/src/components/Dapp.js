@@ -105,7 +105,7 @@ export class Dapp extends React.Component {
             </Typography>
           </Toolbar>
         </AppBar>
-        <DutchAuctionCard stage={1}/>
+        <DutchAuctionCard auctionData={this.state.auctionData}/>
       </Box>
       
     
@@ -120,11 +120,9 @@ export class Dapp extends React.Component {
     this._initialize()
   }
 
-  // componentWillUnmount() {
-  //   // We poll the user's balance, so we have to stop doing that when Dapp
-  //   // gets unmounted
-  //   this._stopPollingData();
-  // }
+  componentWillUnmount() {
+    this._stopPollingData();
+  }
 
 
   async _connectWallet() {
@@ -166,16 +164,12 @@ export class Dapp extends React.Component {
   }
 
   _initialize() {
-    // This method initializes the dapp
-
-    // Then, we initialize ethers, fetch the token's data, and start polling
-    // for the user's balance.
 
     // Fetching the token data and the user's balance are specific to this
     // sample project, but you can reuse the same initialization pattern.
     this._initializeEthers();
     // this._getTokenData();
-    // this._startPollingData();
+    this._startPollingData();
   }
 
   async _initializeEthers() {
@@ -187,13 +181,13 @@ export class Dapp extends React.Component {
     this._DutchAuction = new ethers.Contract(
       contractAddress.DutchAuction,
       DutchAuctionArtifact.abi,
-      this._provider.getSigner(0)
+      this._provider
     );
-    console.log("connected to Dutch Auction contract")
+    console.log(this._DutchAuction)
   }
 
-  // TODO modify this to poll without making calls and using gas
   _startPollingData() {
+    console.log("Start polling")
     this._pollDataInterval = setInterval(() => this._updateAuctionState(), 1000);
     this._updateAuctionState();
   }
@@ -202,7 +196,42 @@ export class Dapp extends React.Component {
     clearInterval(this._pollDataInterval);
     this._pollDataInterval = undefined;
   }
-
+  
+  async _updateAuctionState() {
+    const stage = await this._DutchAuction.stage();
+    if (stage === 1) {
+      // for now
+      const endTime = await this._DutchAuction.endTime();
+      if (endTime < Date.now() / 1000) {
+        this.setState({
+          auctionData: {stage: 2}
+        })
+        return
+      }
+      
+      const startTime = await this._DutchAuction.startTime();
+      const discountRate = await this._DutchAuction.discountRate();
+      const startingPrice = await this._DutchAuction.startingPrice();
+      const totalTokens = await this._DutchAuction.totalTokens();
+      const totalSold = await this._DutchAuction.totalSold();
+      const reservedPrice = await this._DutchAuction.reservedPrice();
+      const price = Math.max(reservedPrice.toNumber(), startingPrice.toNumber() - discountRate.toNumber() * (Math.floor(Date.now() / 1000) - startTime.toNumber()))
+      this.setState({auctionData: {
+        stage: stage,
+        discountRate: discountRate.toNumber(), 
+        startingPrice: startingPrice.toNumber(), 
+        totalSold: totalSold.toNumber(), 
+        totalTokens: totalTokens.toNumber(),
+        startTime: startTime.toNumber(),
+        reservedPrice: reservedPrice.toNumber(),
+        endTime: endTime.toNumber(), 
+        price
+      }})
+      
+    } else {
+      this.setState({ auctionData: {stage} });
+    }
+  }
   // The next two methods just read from the contract and store the results
   // in the component state.
   async _getTokenData() {
@@ -212,10 +241,6 @@ export class Dapp extends React.Component {
     this.setState({ tokenData: { name, symbol } });
   }
 
-  async _updateAuctionState() {
-    const balance = await this._token.balanceOf(this.state.selectedAddress);
-    this.setState({ balance });
-  }
 
   // This method sends an ethereum transaction to transfer tokens.
   // While this action is specific to this application, it illustrates how to

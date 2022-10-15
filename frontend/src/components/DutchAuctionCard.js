@@ -6,23 +6,32 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box'
 
 export function DutchAuctionCard(props) {
-  console.log(
-    "hi", props
-  )
+
   const renderCardDetails = () => {
-    switch (props.stage) {
+    switch (props.auctionData.stage) {
       case 0:
-        return "0"
+        return "Not started"
       case 1:
-        return "1"
+        return renderAuctionStartCard()
       case 2:
-        return "2"
+        return "ended"
     
       default:
         break;
     }
   }
   
+  const renderAuctionStartCard = () => {
+    return (
+      <Typography>
+      TUBBY token launch is live! 
+      Total supply: {props.auctionData.totalTokens}
+      Total sold: {props.auctionData.totalSold}
+      Price: {props.auctionData.price}
+      </Typography>
+    )
+  }
+
   return (
     <Box sx = {{
       display: 'flex',
@@ -32,9 +41,8 @@ export function DutchAuctionCard(props) {
     }}>
       <Card variant="outlined" sx={{ width: "33%", height: "60%" }}>
         <CardContent>
-          <Typography variant="h5" component="div">
-            {renderCardDetails()}
-          </Typography>
+          {renderCardDetails()}
+
         </CardContent>
       </Card>
     </Box>

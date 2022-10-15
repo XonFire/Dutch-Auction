@@ -32,7 +32,10 @@ async function main() {
 
   console.log("TubbysCoin address:", TubbysCoin.address);
   console.log("DutchAuction address", DutchAuction.address);
-
+  
+  await DutchAuction.startAuction();
+  const stage = await DutchAuction.stage()
+  console.log("Starting Auction! Remove this after testing", stage)
   // We also save the contract's artifacts and address in the frontend directory
   saveFrontendFiles(TubbysCoin, DutchAuction);
 }
