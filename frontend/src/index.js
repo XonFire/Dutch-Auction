@@ -6,10 +6,6 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { orange, red } from "@mui/material/colors";
 import "bootstrap/dist/css/bootstrap.css";
 import CssBaseline from '@mui/material/CssBaseline';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 
 const theme = createTheme({});
 

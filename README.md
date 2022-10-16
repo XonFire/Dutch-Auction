@@ -10,14 +10,11 @@ npx hardhat node
 ```
 
 In a separate terminal, we deploy our contracts by running 
+// todo for now this starts the auction
 ```
 npx hardhat run scripts/deploy.js --network localhost
 ```
 
-Currently, theres no UI to start the auction, so we run the script: TODO
-```
-npx hardhat run scripts/startAuction.js --network localhost
-```
 To run front end, run
 ```
 cd frontend

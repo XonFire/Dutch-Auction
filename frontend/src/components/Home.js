@@ -4,8 +4,9 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box'
+import Button from "@mui/material/Button"
 
-export function DutchAuctionCard(props) {
+export function Home(props) {
 
   const renderCardDetails = () => {
     switch (props.auctionData.stage) {
@@ -23,12 +24,15 @@ export function DutchAuctionCard(props) {
   
   const renderAuctionStartCard = () => {
     return (
-      <Typography>
-      TUBBY token launch is live! 
-      Total supply: {props.auctionData.totalTokens}
-      Total sold: {props.auctionData.totalSold}
-      Price: {props.auctionData.price}
-      </Typography>
+      <>
+        <Typography>
+        TUBBY token launch is live! 
+        Total supply: {props.auctionData.totalTokens}
+        Total sold: {props.auctionData.totalSold}
+        Price: {props.auctionData.price}
+        </Typography>
+        <Button variant="contained" onClick={props.placeBid}>Place a bid</Button>
+      </>
     )
   }
 
@@ -37,10 +41,13 @@ export function DutchAuctionCard(props) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      height: '90vh'
+      height: '100%'
     }}>
       <Card variant="outlined" sx={{ width: "33%", height: "60%" }}>
         <CardContent>
+          <Typography>
+            Sorry this is still ugly // TODO
+          </Typography>
           {renderCardDetails()}
 
         </CardContent>
