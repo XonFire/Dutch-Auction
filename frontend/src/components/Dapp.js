@@ -8,7 +8,7 @@ import { ethers } from "ethers";
 // import TokenArtifact from "../contracts/Token.json";
 
 import contractAddress from "../contracts/contract-address.json";
-import DutchAuctionArtifact from "../contracts/DutchAuction.json"
+import DutchAuctionArtifact from "../contracts/DutchAuction.json";
 
 import { NoWalletDetected } from "./NoWalletDetected";
 import { ConnectWallet } from "./ConnectWallet";
@@ -17,19 +17,20 @@ import { Transfer } from "./Transfer";
 import { TransactionErrorMessage } from "./TransactionErrorMessage";
 import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
 import { NoTokensMessage } from "./NoTokensMessage";
-import { Home } from "./Home"
-import { BidPage } from "./BidPage"
+import { Home } from "./Home";
+import { BidPage } from "./BidPage";
+import { ClaimPage } from "./ClaimPage";
 
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
 
 // This is the Hardhat Network id that we set in our hardhat.config.js.
 // Here's a list of network ids https://docs.metamask.io/guide/ethereum-provider.html#properties
 // to use when deploying to other networks.
-const HARDHAT_NETWORK_ID = '31337';
+const HARDHAT_NETWORK_ID = "31337";
 
 // This is an error code that indicates that the user canceled a transaction
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
@@ -43,11 +44,11 @@ export class Dapp extends React.Component {
     this.initialState = {
       // Auction date - stage, start time, discount etc, used for client side calculations
       auctionData: undefined,
-      
+
       // page (home, bid (3 steps), claim)
       page: "home",
 
-      // will be set when bidding and claiming tokens 
+      // will be set when bidding and claiming tokens
       selectedAddress: undefined,
 
       // TODO error handle
@@ -55,31 +56,52 @@ export class Dapp extends React.Component {
       networkError: undefined,
     };
 
-    // The dutch auction object itself. Can either be connected via 
+    // The dutch auction object itself. Can either be connected via
     // provider - without an address, so only can get attributes
     // signer - with an address, can make function calls with gas
-    this._DutchAuction = undefined
+    this._DutchAuction = undefined;
 
     this.state = this.initialState;
   }
 
   renderPage() {
     switch (this.state.page) {
-      case "home": 
-        return <Home 
-          auctionData={this.state.auctionData}
-          placeBid={()=>this.setState({page:"bid"})}
-        />
+      case "home":
+        return (
+          <Home
+            auctionData={this.state.auctionData}
+            placeBid={() => this.setState({ page: "bid" })}
+            claim={() => this.setState({ page: "claim" })}
+          />
+        );
       case "bid":
-        return <BidPage 
-          auctionData={this.state.auctionData} 
-          connectWallet={() => this._connectWallet() } 
-          DutchAuction={this._DutchAuction}  
-          selectedAddress={this.state.selectedAddress}
-        />
+        return (
+          <BidPage
+            auctionData={this.state.auctionData}
+            connectWallet={() => this._connectWallet()}
+            DutchAuction={this._DutchAuction}
+            selectedAddress={this.state.selectedAddress}
+            returnToHome={() =>
+              this.setState({ page: "home", selectedAddress: undefined }, () =>
+                this._initializeEthers()
+              )
+            }
+          />
+        );
+      case "claim":
+        return (
+          <ClaimPage
+            auctionData={this.state.auctionData}
+            connectWallet={() => this._connectWallet()}
+            selectedAddress={this.state.selectedAddress}
+            DutchAuction={this._DutchAuction}
+          />
+        );
+      default:
+        return "error";
     }
   }
-  
+
   render() {
     // Ethereum wallets inject the window.ethereum object. If it hasn't been
     // injected, we instruct the user to install MetaMask.
@@ -88,12 +110,14 @@ export class Dapp extends React.Component {
     }
 
     if (this._DutchAuction === undefined) {
-      console.log("missing contract")
-      return <Loading />
+      console.log("missing contract");
+      return <Loading />;
     }
 
     return (
-      <Box sx={{ display: "flex", "flex-direction": "column", "height": "100vh" }}>
+      <Box
+        sx={{ display: "flex", "flex-direction": "column", height: "100vh" }}
+      >
         <AppBar position="static">
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -103,25 +127,23 @@ export class Dapp extends React.Component {
         </AppBar>
         {this.renderPage()}
       </Box>
-    )
+    );
   }
 
   // We connect to the dutch auction on mounting
   componentDidMount() {
     if (!this._checkNetwork()) {
-      console.log("Network error")
+      console.log("Network error");
       return;
     }
-    console.log("checked network")
-    this._initialize()
+    console.log("checked network");
+    this._initialize();
   }
 
   componentWillUnmount() {
     this._stopPollingData();
   }
 
-
-  
   _initialize() {
     this._initializeEthers();
     this._startPollingData();
@@ -133,23 +155,26 @@ export class Dapp extends React.Component {
 
     // Then, we initialize the contract using that provider and the token's
     // artifact. You can do this same thing with your contracts.
-    
-    let providerSigner = this._provider
+
+    let providerSigner = this._provider;
     if (this.state.selectedAddress !== undefined) {
-      providerSigner = providerSigner.getSigner(0)
-    }    
+      providerSigner = providerSigner.getSigner();
+    }
 
     this._DutchAuction = new ethers.Contract(
       contractAddress.DutchAuction,
       DutchAuctionArtifact.abi,
       providerSigner
     );
-    console.log(this._DutchAuction)
+    console.log(this._DutchAuction);
   }
 
   _startPollingData() {
-    console.log("Start polling")
-    this._pollDataInterval = setInterval(() => this._updateAuctionState(), 1000);
+    console.log("Start polling");
+    this._pollDataInterval = setInterval(
+      () => this._updateAuctionState(),
+      1000
+    );
     this._updateAuctionState();
   }
 
@@ -157,152 +182,64 @@ export class Dapp extends React.Component {
     clearInterval(this._pollDataInterval);
     this._pollDataInterval = undefined;
   }
-  
+
   async _updateAuctionState() {
     const stage = await this._DutchAuction.stage();
-    if (stage === 1) {
-      // for now
+    if (stage === 1 || stage === 2) {
       const endTime = await this._DutchAuction.endTime();
+      const totalTokens = await this._DutchAuction.totalTokens();
+      const totalSold = await this._DutchAuction.totalSold();
       if (endTime < Date.now() / 1000) {
         this.setState({
-          auctionData: {stage: 2}
-        })
-        return
+          auctionData: {
+            stage: 2,
+            totalSold: totalSold.toNumber(),
+            totalTokens: totalTokens.toNumber(),
+          },
+        });
+        return;
       }
-      
+
       const startTime = await this._DutchAuction.startTime();
       const discountRate = await this._DutchAuction.discountRate();
       const startingPrice = await this._DutchAuction.startingPrice();
-      const totalTokens = await this._DutchAuction.totalTokens();
-      const totalSold = await this._DutchAuction.totalSold();
       const reservedPrice = await this._DutchAuction.reservedPrice();
-      const price = Math.max(reservedPrice.toNumber(), startingPrice.toNumber() - discountRate.toNumber() * (Math.floor(Date.now() / 1000) - startTime.toNumber()))
-      this.setState({auctionData: {
-        stage: stage,
-        discountRate: discountRate.toNumber(), 
-        startingPrice: startingPrice.toNumber(), 
-        totalSold: totalSold.toNumber(), 
-        totalTokens: totalTokens.toNumber(),
-        startTime: startTime.toNumber(),
-        reservedPrice: reservedPrice.toNumber(),
-        endTime: endTime.toNumber(), 
-        price
-      }})
-      
+      const price = Math.max(
+        reservedPrice.toNumber(),
+        startingPrice.toNumber() -
+          discountRate.toNumber() *
+            (Math.floor(Date.now() / 1000) - startTime.toNumber())
+      );
+      this.setState({
+        auctionData: {
+          stage: stage,
+          discountRate: discountRate.toNumber(),
+          startingPrice: startingPrice.toNumber(),
+          totalSold: totalSold.toNumber(),
+          totalTokens: totalTokens.toNumber(),
+          startTime: startTime.toNumber(),
+          reservedPrice: reservedPrice.toNumber(),
+          endTime: endTime.toNumber(),
+          price,
+        },
+      });
     } else {
-      this.setState({ auctionData: {stage} });
+      this.setState({ auctionData: { stage } });
     }
   }
 
-  
   async _connectWallet() {
     // This method is run when the user clicks the Connect. It connects the
     // dapp to the user's wallet, and initializes it.
 
     // To connect to the user's wallet, we have to run this method.
     // It returns a promise that will resolve to the user's address.
-    const [selectedAddress] = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    this.setState({selectedAddress: selectedAddress}, () => this._initializeEthers())
-  }
-
-  
-
-  //   // First we check the network
-  //   if (!this._checkNetwork()) {
-  //     return;
-  //   }
-
-  //   this._initialize(selectedAddress);
-
-    // // We reinitialize it whenever the user changes their account.
-    // window.ethereum.on("accountsChanged", ([newAddress]) => {
-    //   this._stopPollingData();
-    //   // `accountsChanged` event can be triggered with an undefined newAddress.
-    //   // This happens when the user removes the Dapp from the "Connected
-    //   // list of sites allowed access to your addresses" (Metamask > Settings > Connections)
-    //   // To avoid errors, we reset the dapp state 
-    //   if (newAddress === undefined) {
-    //     return this._resetState();
-    //   }
-      
-    //   this._initialize(newAddress);
-    // });
-    
-    // We reset the dapp state if the network is changed
-    // window.ethereum.on("chainChanged", ([networkId]) => {
-    //   this._stopPollingData();
-    //   this._resetState();
-    // });
-  // }
-
-  // // The next two methods just read from the contract and store the results
-  // // in the component state.
-  // async _getTokenData() {
-  //   const name = await this._token.name();
-  //   const symbol = await this._token.symbol();
-
-  //   this.setState({ tokenData: { name, symbol } });
-  // }
-
-
-  // This method sends an ethereum transaction to transfer tokens.
-  // While this action is specific to this application, it illustrates how to
-  // send a transaction.
-  async _transferTokens(to, amount) {
-    // Sending a transaction is a complex operation:
-    //   - The user can reject it
-    //   - It can fail before reaching the ethereum network (i.e. if the user
-    //     doesn't have ETH for paying for the tx's gas)
-    //   - It has to be mined, so it isn't immediately confirmed.
-    //     Note that some testing networks, like Hardhat Network, do mine
-    //     transactions immediately, but your dapp should be prepared for
-    //     other networks.
-    //   - It can fail once mined.
-    //
-    // This method handles all of those things, so keep reading to learn how to
-    // do it.
-
-    try {
-      // If a transaction fails, we save that error in the component's state.
-      // We only save one such error, so before sending a second transaction, we
-      // clear it.
-      this._dismissTransactionError();
-
-      // We send the transaction, and save its hash in the Dapp's state. This
-      // way we can indicate that we are waiting for it to be mined.
-      const tx = await this._token.transfer(to, amount);
-      this.setState({ txBeingSent: tx.hash });
-
-      // We use .wait() to wait for the transaction to be mined. This method
-      // returns the transaction's receipt.
-      const receipt = await tx.wait();
-
-      // The receipt, contains a status flag, which is 0 to indicate an error.
-      if (receipt.status === 0) {
-        // We can't know the exact error that made the transaction fail when it
-        // was mined, so we throw this generic one.
-        throw new Error("Transaction failed");
-      }
-
-      // If we got here, the transaction was successful, so you may want to
-      // update your state. Here, we update the user's balance.
-      await this._updateBalance();
-    } catch (error) {
-      // We check the error code to see if this error was produced because the
-      // user rejected a tx. If that's the case, we do nothing.
-      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) {
-        return;
-      }
-
-      // Other errors are logged and stored in the Dapp's state. This is used to
-      // show them to the user, and for debugging.
-      console.error(error);
-      this.setState({ transactionError: error });
-    } finally {
-      // If we leave the try/catch, we aren't sending a tx anymore, so we clear
-      // this part of the state.
-      this.setState({ txBeingSent: undefined });
-    }
+    const [selectedAddress] = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+    this.setState({ selectedAddress: selectedAddress }, () =>
+      this._initializeEthers()
+    );
   }
 
   // This method just clears part of the state.
@@ -330,15 +267,15 @@ export class Dapp extends React.Component {
     this.setState(this.initialState);
   }
 
-  // This method checks if Metamask selected network is Localhost:8545 
+  // This method checks if Metamask selected network is Localhost:8545
   _checkNetwork() {
-    console.log(window.ethereum.networkVersion)
+    console.log(window.ethereum.networkVersion);
     if (window.ethereum.networkVersion === HARDHAT_NETWORK_ID) {
       return true;
     }
 
-    this.setState({ 
-      networkError: 'Please connect Metamask to Localhost:8545'
+    this.setState({
+      networkError: "Please connect Metamask to Localhost:8545",
     });
 
     return false;

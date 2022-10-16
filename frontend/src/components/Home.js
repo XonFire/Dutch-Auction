@@ -1,55 +1,70 @@
 import React from "react";
 
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box'
-import Button from "@mui/material/Button"
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 
 export function Home(props) {
-
   const renderCardDetails = () => {
     switch (props.auctionData.stage) {
       case 0:
-        return "Not started"
+        return "Not started";
       case 1:
-        return renderAuctionStartCard()
+        return renderAuctionStartCard();
       case 2:
-        return "ended"
-    
+        return renderAuctionEndCard();
+
       default:
         break;
     }
-  }
-  
+  };
+
+  const renderAuctionEndCard = () => {
+    return (
+      <>
+        <Typography>
+          TUBBY token launch is ended! Total supply:
+          {props.auctionData.totalTokens}
+          Total sold: {props.auctionData.totalSold}
+        </Typography>
+        <Button variant="contained" onClick={props.claim}>
+          Claim
+        </Button>
+      </>
+    );
+  };
+
   const renderAuctionStartCard = () => {
     return (
       <>
         <Typography>
-        TUBBY token launch is live! 
-        Total supply: {props.auctionData.totalTokens}
-        Total sold: {props.auctionData.totalSold}
-        Price: {props.auctionData.price}
+          TUBBY token launch is live! Total supply:{" "}
+          {props.auctionData.totalTokens}
+          Total sold: {props.auctionData.totalSold}
+          Price: {props.auctionData.price}
         </Typography>
-        <Button variant="contained" onClick={props.placeBid}>Place a bid</Button>
+        <Button variant="contained" onClick={props.placeBid}>
+          Place a bid
+        </Button>
       </>
-    )
-  }
+    );
+  };
 
   return (
-    <Box sx = {{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100%'
-    }}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+      }}
+    >
       <Card variant="outlined" sx={{ width: "33%", height: "60%" }}>
         <CardContent>
-          <Typography>
-            Sorry this is still ugly // TODO
-          </Typography>
+          <Typography>Sorry this is still ugly // TODO</Typography>
           {renderCardDetails()}
-
         </CardContent>
       </Card>
     </Box>
