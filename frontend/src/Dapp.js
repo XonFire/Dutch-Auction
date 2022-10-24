@@ -1,4 +1,5 @@
 import React from "react";
+import './Dapp.css';
 
 // We'll use ethers to interact with the Ethereum network and our contract
 import { ethers } from "ethers";
@@ -7,25 +8,22 @@ import { ethers } from "ethers";
 // using them with ethers
 // import TokenArtifact from "../contracts/Token.json";
 
-import contractAddress from "../contracts/contract-address.json";
-import DutchAuctionArtifact from "../contracts/DutchAuction.json";
+import contractAddress from "./contracts/contract-address.json";
+import DutchAuctionArtifact from "./contracts/DutchAuction.json";
 
-import { NoWalletDetected } from "./NoWalletDetected";
-import { ConnectWallet } from "./ConnectWallet";
-import { Loading } from "./Loading";
-import { Transfer } from "./Transfer";
-import { TransactionErrorMessage } from "./TransactionErrorMessage";
-import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
-import { NoTokensMessage } from "./NoTokensMessage";
-import { Home } from "./Home";
-import { BidPage } from "./BidPage";
-import { ClaimPage } from "./ClaimPage";
+import { NoWalletDetected } from "./components/NoWalletDetected";
+import { ConnectWallet } from "./components/ConnectWallet";
+import Loading from "./components/Loading";
+import { Transfer } from "./components/Transfer";
+import { TransactionErrorMessage } from "./components/TransactionErrorMessage";
+import { WaitingForTransactionMessage } from "./components/WaitingForTransactionMessage";
+import { NoTokensMessage } from "./components/NoTokensMessage";
+import HomePage from "./components/HomePage";
+import BidPage from "./components/BidPage";
+import ClaimPage from "./components/ClaimPage";
 
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
+
+import { PageHeader } from "antd"
 
 // This is the Hardhat Network id that we set in our hardhat.config.js.
 // Here's a list of network ids https://docs.metamask.io/guide/ethereum-provider.html#properties
@@ -35,7 +33,7 @@ const HARDHAT_NETWORK_ID = "31337";
 // This is an error code that indicates that the user canceled a transaction
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
 
-export class Dapp extends React.Component {
+class Dapp extends React.Component {
   constructor(props) {
     super(props);
 
@@ -68,7 +66,7 @@ export class Dapp extends React.Component {
     switch (this.state.page) {
       case "home":
         return (
-          <Home
+          <HomePage
             auctionData={this.state.auctionData}
             placeBid={() => this.setState({ page: "bid" })}
             claim={() => this.setState({ page: "claim" })}
@@ -111,22 +109,21 @@ export class Dapp extends React.Component {
 
     if (this._DutchAuction === undefined) {
       console.log("missing contract");
-      return <Loading />;
+      return <> 
+      <Loading />
+      </>
+      
     }
 
     return (
-      <Box
-        sx={{ display: "flex", "flex-direction": "column", height: "100vh" }}
-      >
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Tubby Coin Dutch Auction
-            </Typography>
-          </Toolbar>
-        </AppBar>
+      <> 
+        <PageHeader
+          className="site-page-header"
+          title="Tubby Coin Dutch Auction"
+          subTitle= "CZ4153"
+        />
         {this.renderPage()}
-      </Box>
+      </>
     );
   }
 
@@ -281,3 +278,5 @@ export class Dapp extends React.Component {
     return false;
   }
 }
+
+export default Dapp;

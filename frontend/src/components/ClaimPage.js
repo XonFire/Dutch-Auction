@@ -1,20 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-import { Loading } from "./Loading";
-
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-
-import { useState, useEffect } from "react";
+import Loading from "./Loading";
+import { Card, Button, Typography } from "antd";
 
 // This is an error code that indicates that the user canceled a transaction
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
 
-export function ClaimPage(props) {
+const ClaimPage = (props) => {
   // input field
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -59,7 +51,7 @@ export function ClaimPage(props) {
   };
 
   return (
-    <Box
+    <Card
       sx={{
         flex: 1,
         height: "100%",
@@ -67,7 +59,7 @@ export function ClaimPage(props) {
         flexDirection: "row",
       }}
     >
-      <Box>
+      <Card>
         <Typography>Connect wallet</Typography>
 
         <Button
@@ -93,7 +85,9 @@ export function ClaimPage(props) {
         </Button>
 
         {loading ? <Loading /> : <></>}
-      </Box>
-    </Box>
+      </Card>
+    </Card>
   );
 }
+
+export default ClaimPage;
