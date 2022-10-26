@@ -2,18 +2,16 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "hardhat/console.sol";
 
-contract TubbysCoin is ERC20Burnable {
-    address public owner;
-
-    constructor(uint256 initialSupply) ERC20("TubbyCoin", "TUBBY") {
-        owner = msg.sender;
-        _mint(owner, initialSupply);
+contract TubbysCoin is ERC20Burnable, Ownable {
+    constructor(uint256 initialSupply) ERC20("TubbyCoin", "TUBBY") Ownable() {
+        _mint(owner(), initialSupply);
     }
 }
 
-contract DutchAuction {
+contract DutchAuction is Ownable {
     event BidSubmission(
         address indexed bidder,
         uint256 quntity,
@@ -23,8 +21,6 @@ contract DutchAuction {
     event AuctionEnd(uint256 endTime);
 
     event RefundEther(address indexed bidder, uint256 refund);
-
-    address payable public owner;
 
     bool internal locked;
     uint256 public finalPrice;
@@ -57,11 +53,6 @@ contract DutchAuction {
         _;
     }
 
-    modifier isOwner() {
-        require(msg.sender == owner, "Not owner of contract");
-        _;
-    }
-
     modifier reentrancyGuard() {
         require(!locked);
         locked = true;
@@ -74,9 +65,8 @@ contract DutchAuction {
         uint256 _startingPrice,
         uint256 _reservedPrice,
         uint256 _discountRate
-    ) {
+    ) Ownable() {
         require(_token != address(0), "Invalid address");
-        owner = payable(msg.sender);
         token = ERC20Burnable(_token);
         stage = Stages.init;
         reservedPrice = _reservedPrice;
@@ -87,7 +77,7 @@ contract DutchAuction {
         totalTokens = token.totalSupply();
     }
 
-    function startAuction() public isOwner isStage(Stages.init) {
+    function startAuction() public onlyOwner isStage(Stages.init) {
         require(
             token.balanceOf(address(this)) == totalTokens,
             "Auction is not approved to sell token total supply"
@@ -143,7 +133,8 @@ contract DutchAuction {
         finalPrice = calcTokenPrice();
         endTime = block.timestamp;
         token.burn(totalTokens - totalSold);
-        owner.transfer(finalPrice * totalSold);
+        address payable contractOwner = payable(owner());
+        contractOwner.transfer(finalPrice * totalSold);
         emit AuctionEnd(endTime);
     }
 
