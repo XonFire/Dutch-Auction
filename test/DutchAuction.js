@@ -219,5 +219,15 @@ describe("Dutch Auction contract", function () {
                 .to.changeTokenBalances(TubbysCoin, [addr1], [4000])
                 .to.emit(DutchAuction, "RefundEther").withArgs(addr1.address, (1999 - 1000) * 4000);
         })
+
+        it("Should allow claiming after a very long duration", async function () {
+            const { TubbysCoin, DutchAuction, addr1 } = await loadFixture(deployAuctionFixture);
+            await DutchAuction.startAuction();
+            await (DutchAuction.connect(addr1).bid(4000, { value: 100000000 }))
+            await time.increase(300 * 60);
+            await expect(DutchAuction.connect(addr1).claimTokens())
+                .to.changeTokenBalances(TubbysCoin, [addr1], [4000])
+                .to.emit(DutchAuction, "RefundEther");
+        })
     })
 });

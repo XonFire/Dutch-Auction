@@ -1,16 +1,18 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import { Dapp } from "./components/Dapp";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import Dapp from "./Dapp";
+// import App from './App';
+import reportWebVitals from './reportWebVitals';
 
-// We import bootstrap here, but you can remove if you want
-import "bootstrap/dist/css/bootstrap.css";
-
-// This is the entry point of your application, but it just renders the Dapp
-// react component. All of the logic is contained in it.
-
-ReactDOM.render(
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
   <React.StrictMode>
     <Dapp />
-  </React.StrictMode>,
-  document.getElementById("root")
+  </React.StrictMode>
 );
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
