@@ -39,7 +39,7 @@ describe("Dutch Auction contract", function () {
     describe("Dutch Auction Start", function () {
         it("Should not be start by non-owner", async function () {
             const { DutchAuction, addr1 } = await loadFixture(deployAuctionFixture);
-            await expect(DutchAuction.connect(addr1).startAuction()).to.be.revertedWith("Not owner of contract");
+            await expect(DutchAuction.connect(addr1).startAuction()).to.be.revertedWith("Ownable: caller is not the owner");
         })
 
         it("Should not start if token owner did not approve Dutch Auction to sell the total supply of tokens", async function () {
