@@ -1,8 +1,7 @@
 import React, { useState }  from "react";
 
 import Loading from "./Loading";
-import { LoadingOutlined, SmileOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
-import { Avatar, Row, Col, Card, Checkbox, Button, InputNumber, Typography, Steps } from "antd";
+import { Avatar, Row, Col, Card, Button, InputNumber, Result, Steps } from "antd";
 const { Step } = Steps;
 const { Meta } = Card;
 
@@ -14,12 +13,12 @@ const BidPage = (props) => {
   const [step, setStep] = useState(0); // 0 for place bid, 1 for connect wallet, 2 for confirm, 3 for done
 
   // input field
-  const [value, setValue] = useState("");
-  const [quantity, setQuantity] = useState("");
+  const [value, setValue] = useState(0);
+  const [quantity, setQuantity] = useState(0);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-
+  const isBidValid = quantity > 0 && value > 0
   const handleConfirm = async () => {
     setLoading(true);
     try {
@@ -36,18 +35,31 @@ const BidPage = (props) => {
       );
 
       console.log("Event from Submit", bidSubmission);
-      let successMessage =
-        "Successfully bought " +
-        bidSubmission.args.quntity.toString() +
-        "for" +
-        bidSubmission.args.amount.toString();
-      setMessage(successMessage);
+      setMessage(
+        <Result
+        status="success"
+        title="Successfully bought TUBBY"
+        subTitle={`${bidSubmission.args.quntity.toString()} TUBBY purchased for ${bidSubmission.args.amount.toString()} with ${bidSubmission.args.bidder.toString()}`}
+        extra={[
+          <Button type="primary" onClick={props.returnToHome}> Back Home </Button>,
+        ]}
+      />
+      );
     } catch (error) {
       if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) {
         return;
       }
       console.error(error);
-      setMessage("Error");
+      setMessage(
+        <Result
+        status="500"
+        title="Transaction Failed"
+        subTitle="Please check and resubmit the transaction"
+        extra={[
+          <Button type="primary" onClick={props.returnToHome}> Back Home </Button>,
+        ]}
+        />
+      );
     } finally {
       setLoading(false);
       setStep(3);
@@ -72,12 +84,13 @@ const BidPage = (props) => {
             <InputNumber min={0} value={value} onChange={setValue} />
             </div> 
             <div style={{marginTop: "20px"}}> 
-              <Checkbox>Remember me</Checkbox>
-              <Checkbox>Remember me</Checkbox>
-              <Checkbox>Remember me</Checkbox>
-              <Button type="primary" onClick={() => setStep(1)}>
+              {isBidValid 
+              ? <Button type="primary" onClick={() => setStep(1)}>
                 Continue
-              </Button>
+              </Button> 
+              : <Button disabled type="primary" onClick={() => setStep(1)}>
+                Continue
+              </Button>}
             </div> 
           </>
         );
@@ -133,11 +146,8 @@ const BidPage = (props) => {
         return (
           <> 
               <div style={{margin: "20px"}}>
-              <h2>{message}</h2>
-              <Button type="primary" onClick={props.returnToHome}>
-                Back to home
-              </Button>
-            </div>
+              {message}
+              </div>
           </>
         );
       default:
