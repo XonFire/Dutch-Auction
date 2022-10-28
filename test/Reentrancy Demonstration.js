@@ -3,7 +3,7 @@ const { expect } = require("chai");
 const { loadFixture, time } = require("@nomicfoundation/hardhat-network-helpers");
 require("@nomicfoundation/hardhat-chai-matchers");
 
-describe.only("Reentrancy Attack Demonstration", function () {
+describe("Reentrancy Attack Demonstration", function () {
     async function deployContractsFixture() {
         const TubbysCoinFactory = await ethers.getContractFactory("TubbysCoin");
         const [owner, addr1, addr2] = await ethers.getSigners();

@@ -10,6 +10,13 @@ If any of the contract code has been edited, they must be recompiled
 npx hardhat compile
 ```
 
+To test contract code and code coverage. To get gas usage report, set the <code>REPORT_GAS</code> environment variable to true.<br>
+(For Windows: <code>set REPORT_GAS=true</code>. For UNIX: <code>export REPORT_GAS=true</code>)
+```
+npx hardhat test
+npx hardhat coverage
+```
+
 To run the localhost node, run the command in the terminal and leave it running
 ```
 npx hardhat node
