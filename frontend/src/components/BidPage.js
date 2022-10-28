@@ -174,7 +174,7 @@ const BidPage = (props) => {
         <Card style={{margin: "10px"}}>
           {renderStep()}
         </Card> 
-        </Col>
+      </Col>
       <Col span={12}>
         {
             (value || quantity)  &&
