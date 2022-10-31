@@ -15,7 +15,6 @@ const HomePage = (props) => {
         return renderAuctionStartCard();
       case 2:
         return renderAuctionEndCard();
-
       default:
         break;
     }
@@ -24,12 +23,14 @@ const HomePage = (props) => {
   const renderAuctionEndCard = () => {
     return (
       <>
+        <h2> TUBBY token launch is ended! </h2>
         <Typography>
-          TUBBY token launch is ended! Total supply:
-          {props.auctionData.totalTokens}
+          Total supply: {props.auctionData.totalTokens}
+        </Typography>
+        <Typography>
           Total sold: {props.auctionData.totalSold}
         </Typography>
-        <Button onClick={props.claim}>
+        <Button style={{marginTop: "20px"}} onClick={props.claim}>
           Claim
         </Button>
       </>
