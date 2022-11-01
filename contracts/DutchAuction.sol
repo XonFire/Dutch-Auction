@@ -25,7 +25,7 @@ contract DutchAuction is Ownable {
     uint256 public endTime;
     uint256 public immutable discountRate;
     uint256 public immutable startingPrice;
-    uint256 private constant DURATION = 20 minutes;
+    uint256 private constant DURATION = 1 minutes;
     mapping(address => uint256) public bids;
     mapping(address => uint256) public orders;
     ERC20Burnable public token;

@@ -181,7 +181,7 @@ const BidPage = (props) => {
 
   const getStepComponent = (stepIdx, stepTitle) => {
     if (stepIdx < step) return <Step status="finish" title={stepTitle} />;
-    else if (stepIdx == step)
+    else if (stepIdx === step)
       return <Step status="process" title={stepTitle} />;
     else return <Step status="wait" title={stepTitle} />;
   };

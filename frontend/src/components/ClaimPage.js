@@ -56,7 +56,7 @@ const ClaimPage = (props) => {
                 <Avatar src="https://cdn.pixabay.com/photo/2021/05/24/09/15/ethereum-logo-6278328_1280.png" />
               }
               title={`You have ${tokens} to claim`}
-              description={`Your bid is ${bids}`}
+              description={`Your bid is ${bids / 10 ** 18} ETH`}
               style={{ marginTop: "30px", fill: "yellow", fillOpacity: "50%" }}
             />
           </Card>
@@ -79,11 +79,12 @@ const ClaimPage = (props) => {
     try {
       const tx = await props.DutchAuction.claimTokens();
       const receipt = await tx.wait();
+      console.log("receipt status", receipt.status);
       if (receipt.status === 0) {
         throw new Error("Transaction failed");
       }
       setMessage(
-        <Result status="Success" title="Successfully claimed tokens" />
+        <Result status="success" title="Successfully claimed tokens" />
       );
     } catch (error) {
       if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) {

@@ -24,11 +24,9 @@ const HomePage = (props) => {
   const renderAuctionEndCard = () => {
     return (
       <>
-        <Typography>
-          TUBBY token launch is ended! Total supply:
-          {props.auctionData.totalTokens}
-          Total sold: {props.auctionData.totalSold}
-        </Typography>
+        <Typography>TUBBY token launch is ended!</Typography>
+        <br />
+        <br />
         <Button onClick={props.claim}>Claim</Button>
       </>
     );
