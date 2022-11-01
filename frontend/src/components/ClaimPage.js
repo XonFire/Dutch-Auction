@@ -15,50 +15,54 @@ const ClaimPage = (props) => {
 
   useEffect(() => {
     const getTokens = async () => {
+      if (props.selectedAddress === "") {
+        console.log("missing address");
+        return;
+      }
+
       let order = await props.DutchAuction.orders(props.selectedAddress);
       let bids = await props.DutchAuction.bids(props.selectedAddress);
-
-      let estimatedGas = await props.DutchAuction.estimateGas.claimTokens();
 
       order = order.toNumber();
       if (order > 0) {
         setTokens(order);
-        setBids(bids.toNumber());
+        setBids(bids.toBigInt());
       }
     };
     getTokens();
-  }, [props.selectedAddress]);
+  }, [props.selectedAddress]); // TODO i think this should change to ductch auction?
 
   const renderWalletClaim = () => (
     <>
-      <div style={{margin: "20px"}}>
+      <div style={{ margin: "20px" }}>
         <h2> Connnect your Metamask Wallet </h2>
-        <Button
-          type="default"
-          onClick={props.connectWallet}
-        >
+        <Button type="default" onClick={props.connectWallet}>
           Connect Wallet
         </Button>
       </div>
-      <div style={{margin: "20px"}}>
-        {
-          props.selectedAddress && <Card>
-          <Meta
-            avatar={<Avatar src="https://play-lh.googleusercontent.com/8rzHJpfkdFwA0Lo6_CHUjoNt8OU3EyIe9BZNKGqj0C8BhleguW9LhXHbS46FAtLAJ9r2" />}
-            title= "Your Wallet Address"
-            description={props.selectedAddress}
-            style={{marginTop: "30px", fill: "yellow", fillOpacity: "50%"}}
-          />
-          <Meta
-            avatar={<Avatar src="https://cdn.pixabay.com/photo/2021/05/24/09/15/ethereum-logo-6278328_1280.png" />}
-            title= {`You have ${tokens} to claim`}
-            description={`Your bid is ${bids}`}
-            style={{marginTop: "30px", fill: "yellow", fillOpacity: "50%"}}
-          />
-        </Card>
-        }
+      <div style={{ margin: "20px" }}>
+        {props.selectedAddress && (
+          <Card>
+            <Meta
+              avatar={
+                <Avatar src="https://play-lh.googleusercontent.com/8rzHJpfkdFwA0Lo6_CHUjoNt8OU3EyIe9BZNKGqj0C8BhleguW9LhXHbS46FAtLAJ9r2" />
+              }
+              title="Your Wallet Address"
+              description={props.selectedAddress}
+              style={{ marginTop: "30px", fill: "yellow", fillOpacity: "50%" }}
+            />
+            <Meta
+              avatar={
+                <Avatar src="https://cdn.pixabay.com/photo/2021/05/24/09/15/ethereum-logo-6278328_1280.png" />
+              }
+              title={`You have ${tokens} to claim`}
+              description={`Your bid is ${bids}`}
+              style={{ marginTop: "30px", fill: "yellow", fillOpacity: "50%" }}
+            />
+          </Card>
+        )}
       </div>
-      <div style={{margin: "20px"}}>
+      <div style={{ margin: "20px" }}>
         <Button
           type="primary"
           disabled={props.selectedAddress === undefined || tokens === 0}
@@ -66,9 +70,9 @@ const ClaimPage = (props) => {
         >
           Claim
         </Button>
-      </div> 
+      </div>
     </>
-  )
+  );
 
   const handleClaim = async () => {
     setLoading(true);
@@ -78,42 +82,30 @@ const ClaimPage = (props) => {
       if (receipt.status === 0) {
         throw new Error("Transaction failed");
       }
-      setMessage( 
-        <Result
-          status="Success"
-          title="Successfully claimed tokens"
-        />
+      setMessage(
+        <Result status="Success" title="Successfully claimed tokens" />
       );
     } catch (error) {
       if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) {
         return;
       }
       console.error(error);
-      setMessage(
-        <Result
-          status="500"
-          title="Claim failed"
-        />
-      );
+      setMessage(<Result status="500" title="Claim failed" />);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-      <> 
-      <Row style={{margin: "20px"}}>
+    <>
+      <Row style={{ margin: "20px" }}>
+        <Col span={12}>{renderWalletClaim()}</Col>
         <Col span={12}>
-          {renderWalletClaim()}
+          <div style={{ margin: "20px" }}>{message}</div>
         </Col>
-        <Col span={12}>
-          <div style={{margin: "20px"}}> 
-            {message}
-          </div>
-        </Col>
-      </Row>     
-  </>
+      </Row>
+    </>
   );
-}
+};
 
 export default ClaimPage;

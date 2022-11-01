@@ -1,5 +1,5 @@
 import React from "react";
-import './Dapp.css';
+import "./Dapp.css";
 
 // We'll use ethers to interact with the Ethereum network and our contract
 import { ethers } from "ethers";
@@ -22,8 +22,8 @@ import HomePage from "./components/HomePage";
 import BidPage from "./components/BidPage";
 import ClaimPage from "./components/ClaimPage";
 
-
-import { PageHeader } from "antd"
+import { PageHeader } from "antd";
+import { BigNumber } from "ethers";
 
 // This is the Hardhat Network id that we set in our hardhat.config.js.
 // Here's a list of network ids https://docs.metamask.io/guide/ethereum-provider.html#properties
@@ -109,18 +109,19 @@ class Dapp extends React.Component {
 
     if (this._DutchAuction === undefined) {
       console.log("missing contract");
-      return <> 
-      <Loading />
-      </>
-      
+      return (
+        <>
+          <Loading />
+        </>
+      );
     }
 
     return (
-      <> 
+      <>
         <PageHeader
           className="site-page-header"
           title="Tubby Coin Dutch Auction"
-          subTitle= "CZ4153"
+          subTitle="CZ4153"
         />
         {this.renderPage()}
       </>
@@ -190,8 +191,8 @@ class Dapp extends React.Component {
         this.setState({
           auctionData: {
             stage: 2,
-            totalSold: totalSold.toNumber(),
-            totalTokens: totalTokens.toNumber(),
+            totalSold: totalSold.toBigInt(),
+            totalTokens: totalTokens.toBigInt(),
           },
         });
         return;
@@ -202,20 +203,20 @@ class Dapp extends React.Component {
       const startingPrice = await this._DutchAuction.startingPrice();
       const reservedPrice = await this._DutchAuction.reservedPrice();
       const price = Math.max(
-        reservedPrice.toNumber(),
-        startingPrice.toNumber() -
-          discountRate.toNumber() *
-            (Math.floor(Date.now() / 1000) - startTime.toNumber())
+        reservedPrice,
+        startingPrice -
+          discountRate *
+            (BigNumber.from(Math.floor(Date.now() / 1000)) - startTime)
       );
       this.setState({
         auctionData: {
           stage: stage,
-          discountRate: discountRate.toNumber(),
-          startingPrice: startingPrice.toNumber(),
+          discountRate: discountRate.toBigInt(),
+          startingPrice: startingPrice.toBigInt(),
           totalSold: totalSold.toNumber(),
           totalTokens: totalTokens.toNumber(),
           startTime: startTime.toNumber(),
-          reservedPrice: reservedPrice.toNumber(),
+          reservedPrice: reservedPrice.toBigInt(),
           endTime: endTime.toNumber(),
           price,
         },

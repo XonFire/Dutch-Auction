@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Button, Typography, Card, Progress, Avatar } from "antd"; 
+import { Button, Typography, Card, Progress, Avatar } from "antd";
 
 import { secsToDHMS } from "../helper";
 
@@ -15,6 +15,7 @@ const HomePage = (props) => {
         return renderAuctionStartCard();
       case 2:
         return renderAuctionEndCard();
+
       default:
         break;
     }
@@ -23,42 +24,61 @@ const HomePage = (props) => {
   const renderAuctionEndCard = () => {
     return (
       <>
-        <h2> TUBBY token launch is ended! </h2>
         <Typography>
-          Total supply: {props.auctionData.totalTokens}
-        </Typography>
-        <Typography>
+          TUBBY token launch is ended! Total supply:
+          {props.auctionData.totalTokens}
           Total sold: {props.auctionData.totalSold}
         </Typography>
-        <Button style={{marginTop: "20px"}} onClick={props.claim}>
-          Claim
-        </Button>
+        <Button onClick={props.claim}>Claim</Button>
       </>
     );
   };
 
   const renderAuctionStartCard = () => {
-    const puchasePercent = props.auctionData.totalSold/props.auctionData.totalTokens
-    const dhms_map = secsToDHMS(props.auctionData.price)
+    const puchasePercent =
+      props.auctionData.totalSold / props.auctionData.totalTokens;
+    const dhms_map = secsToDHMS(
+      props.auctionData.endTime - Math.floor(Date.now() / 1000)
+    );
     return (
       <>
-        <Card style={{ width: 600 }}> 
-          <h2 style={{textAlign: "center"}}> TUBBY token launch is live! </h2>
+        <Card style={{ width: 600 }}>
+          <h2 style={{ textAlign: "center" }}> TUBBY token launch is live! </h2>
           <h4> {puchasePercent}% purchased </h4>
           <Progress percent={puchasePercent * 100} />
-          <h4 style={{textAlign: "right"}}> {props.auctionData.totalTokens} TUBBY </h4>
-          <h2 style={{textAlign: "center", "margin": "30px"}}>${props.auctionData.price}/TUBBY token</h2>
-          <div style={{margin: "40px"}}>
-            <Button type="primary" style ={{textAlign: "center", marginLeft: "40%"}} onClick={props.placeBid}>
-            Place a bid
+          <h4 style={{ textAlign: "right" }}>
+            {" "}
+            {props.auctionData.totalTokens} TUBBY{" "}
+          </h4>
+          <h2 style={{ textAlign: "center", margin: "30px" }}>
+            {props.auctionData.price / 10 ** 18} ETH/TUBBY token
+          </h2>
+          <div style={{ margin: "40px" }}>
+            <Button
+              type="primary"
+              style={{ textAlign: "center", marginLeft: "40%" }}
+              onClick={props.placeBid}
+            >
+              Place a bid
             </Button>
-            <a style={{display: "block", textAlign: "center", marginTop: "10px"}}> Pay with ETH, USDC </a>
+            <a
+              style={{
+                display: "block",
+                textAlign: "center",
+                marginTop: "10px",
+              }}
+            >
+              {" "}
+              Pay with ETH, USDC{" "}
+            </a>
           </div>
           <Meta
-            avatar={<Avatar src="https://cdn.pixabay.com/photo/2021/05/24/09/15/ethereum-logo-6278328_1280.png" />}
-            title= {`${dhms_map.d} days, ${dhms_map.h} hours, ${dhms_map.m} minutes, ${dhms_map.s} seconds`}
+            avatar={
+              <Avatar src="https://cdn.pixabay.com/photo/2021/05/24/09/15/ethereum-logo-6278328_1280.png" />
+            }
+            title={`${dhms_map.d} days, ${dhms_map.h} hours, ${dhms_map.m} minutes, ${dhms_map.s} seconds`}
             description="Until projected auction end"
-            style={{marginTop: "30px", fill: "yellow", fillOpacity: "50%"}}
+            style={{ marginTop: "30px", fill: "yellow", fillOpacity: "50%" }}
           />
         </Card>
       </>
@@ -66,13 +86,12 @@ const HomePage = (props) => {
   };
 
   return (
-    <> 
+    <>
       <Card variant="outlined" sx={{ width: "33%", height: "60%" }}>
         {renderCardDetails()}
       </Card>
     </>
   );
-}
-
+};
 
 export default HomePage;
