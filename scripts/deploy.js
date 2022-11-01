@@ -26,13 +26,13 @@ async function main() {
   const TubbysCoin = await TubbysCoinFactory.deploy(5000);
   await TubbysCoin.deployed();
   const DutchAuctionFactory = await ethers.getContractFactory("DutchAuction");
-  const DutchAuction = await DutchAuctionFactory.deploy(TubbysCoin.address, 2000, 1000, 1);
+  const DutchAuction = await DutchAuctionFactory.deploy(TubbysCoin.address, ethers.utils.parseEther("1"), ethers.utils.parseEther("0.5"), ethers.utils.parseEther("0.0005"));
   await DutchAuction.deployed();
   await TubbysCoin.transfer(DutchAuction.address, 5000);
 
   console.log("TubbysCoin address:", TubbysCoin.address);
   console.log("DutchAuction address", DutchAuction.address);
-  
+
   await DutchAuction.startAuction();
   const stage = await DutchAuction.stage()
   console.log("Starting Auction! Remove this after testing", stage)
